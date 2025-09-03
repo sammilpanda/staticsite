@@ -1,5 +1,7 @@
 from htmlnode import *
 from textnode import *
+from pathlib import Path
+
 import re
 import os
 
