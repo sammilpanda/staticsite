@@ -328,7 +328,7 @@ def extract_title(markdown):
     # If no h1 heading found, raise an exception
     raise ValueError("No h1 header found in markdown")
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath="/"):
     """Generate an HTML page from markdown using a template."""
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     
@@ -357,6 +357,10 @@ def generate_page(from_path, template_path, dest_path):
     final_html = template_content.replace("{{ Title }}", title)
     final_html = final_html.replace("{{ Content }}", html_content)
     
+    # Replace basepath in links and sources
+    final_html = final_html.replace('href="/', f'href="{basepath}')
+    final_html = final_html.replace('src="/', f'src="{basepath}')
+    
     # Create the destination directory if it doesn't exist
     dest_dir = os.path.dirname(dest_path)
     if dest_dir and not os.path.exists(dest_dir):
@@ -369,7 +373,7 @@ def generate_page(from_path, template_path, dest_path):
     
     print(f"Successfully generated page: {dest_path}")
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath="/"):
     """
     Recursively generate HTML pages from all markdown files in a directory.
     
@@ -377,6 +381,7 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
         dir_path_content: Path to the content directory containing markdown files
         template_path: Path to the HTML template file
         dest_dir_path: Path to the destination directory for generated HTML files
+        basepath: Base path for the site (e.g., "/" or "/repo-name/")
     """
     # Check if content directory exists
     if not os.path.exists(dir_path_content):
@@ -394,8 +399,8 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
                 html_filename = item.replace('.md', '.html')
                 dest_file_path = os.path.join(dest_dir_path, html_filename)
                 
-                # Generate the page
-                generate_page(item_path, template_path, dest_file_path)
+                # Generate the page with basepath
+                generate_page(item_path, template_path, dest_file_path, basepath)
             else:
                 print(f"Skipping non-markdown file: {item_path}")
         
@@ -405,7 +410,7 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
             
             # Recursively process the subdirectory
             print(f"Processing subdirectory: {item_path}")
-            generate_pages_recursive(item_path, template_path, dest_subdir)
+            generate_pages_recursive(item_path, template_path, dest_subdir, basepath)
         
         else:
             print(f"Skipping unknown item type: {item_path}")
